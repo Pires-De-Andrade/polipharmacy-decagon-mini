@@ -1,0 +1,18 @@
+# ── Decagon Mini — Dependências ──
+# PyTorch (CPU only) — já instalado
+torch>=2.2.0
+# PyTorch Geometric
+torch-geometric>=2.5.0
+
+# Dados & ML
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.5.0
+
+# Visualização & App
+streamlit>=1.35.0
+matplotlib>=3.9.0
+seaborn>=0.13.0
+
+# Utilitários
+tqdm>=4.66.0
