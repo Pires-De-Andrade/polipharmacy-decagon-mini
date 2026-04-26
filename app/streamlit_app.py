@@ -33,7 +33,7 @@ from src.data.graph_builder import DecagonGraphBuilder
 # ─────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Decagon Mini — Polypharmacy Side Effect Predictor",
-    page_icon="\U0001F9EA",
+    page_icon="Rx",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -50,76 +50,85 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 # ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Import professional font */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    /* Import Libre Baskerville */
+    @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
 
     html, body, [class*="st-"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Libre Baskerville', 'Georgia', serif;
     }
 
-    /* Header bar */
+    /* Global beige background */
+    .stApp {
+        background-color: #faf6f0;
+    }
+
+    /* Header bar — warm dark tone */
     .clinical-header {
-        background: linear-gradient(135deg, #0f4c81 0%, #1a6fb5 50%, #2196F3 100%);
+        background: linear-gradient(135deg, #3e2c1c 0%, #5a3e2b 50%, #6d4c35 100%);
         padding: 1.5rem 2rem;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-bottom: 1.5rem;
-        color: white;
-        box-shadow: 0 2px 12px rgba(15, 76, 129, 0.3);
+        color: #faf6f0;
+        box-shadow: 0 2px 10px rgba(62, 44, 28, 0.25);
+        border-bottom: 3px solid #8c6d52;
     }
     .clinical-header h1 {
-        margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em;
+        margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em;
     }
     .clinical-header p {
-        margin: 0.3rem 0 0 0; font-size: 0.85rem; opacity: 0.85; font-weight: 300;
+        margin: 0.3rem 0 0 0; font-size: 0.82rem; opacity: 0.8; font-weight: 400;
     }
 
     /* Metric cards */
     .metric-card {
-        background: #ffffff;
-        border: 1px solid #e8ecf1;
-        border-radius: 8px;
+        background: #fffcf7;
+        border: 1px solid #ddd5c8;
+        border-radius: 6px;
         padding: 1rem 1.2rem;
         text-align: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .metric-card .label {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #6b7a8d;
-        font-weight: 600;
+        color: #8c7a6a;
+        font-weight: 700;
         margin-bottom: 0.3rem;
     }
     .metric-card .value {
         font-size: 1.6rem;
         font-weight: 700;
-        color: #0f4c81;
+        color: #3e2c1c;
     }
 
     /* Risk level badges */
     .risk-high {
-        background: #fdecec; color: #c0392b; border: 1px solid #e6b0aa;
-        padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 600;
-        font-size: 0.75rem; display: inline-block;
+        background: #fce8e6; color: #a83227; border: 1px solid #e0b4ae;
+        padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 700;
+        font-size: 0.72rem; display: inline-block;
     }
     .risk-moderate {
-        background: #fef5e7; color: #d68910; border: 1px solid #f0d9a0;
-        padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 600;
-        font-size: 0.75rem; display: inline-block;
+        background: #fef5e7; color: #b7791f; border: 1px solid #e8d5a8;
+        padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 700;
+        font-size: 0.72rem; display: inline-block;
     }
     .risk-low {
-        background: #eafaf1; color: #1e8449; border: 1px solid #a9dfbf;
-        padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 600;
-        font-size: 0.75rem; display: inline-block;
+        background: #e8f5e9; color: #1b6d2f; border: 1px solid #a5d6a7;
+        padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 700;
+        font-size: 0.72rem; display: inline-block;
     }
 
-    /* Sidebar styling */
+    /* Sidebar — darker beige tone */
     section[data-testid="stSidebar"] {
-        background: #f7f9fc;
-        border-right: 1px solid #e0e5ec;
+        background: #ede4d6 !important;
+        border-right: 1px solid #d4c9b8;
+    }
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        background: #ede4d6 !important;
     }
     section[data-testid="stSidebar"] .stSelectbox label {
-        font-weight: 600; color: #2c3e50; font-size: 0.85rem;
+        font-weight: 700; color: #3e2c1c; font-size: 0.85rem;
     }
 
     /* Table styling */
@@ -127,39 +136,39 @@ st.markdown("""
         font-size: 0.82rem !important;
     }
     .dataframe thead th {
-        background: #f0f4f8 !important;
-        color: #2c3e50 !important;
-        font-weight: 600 !important;
+        background: #f0ebe3 !important;
+        color: #3e2c1c !important;
+        font-weight: 700 !important;
         text-transform: uppercase;
-        font-size: 0.72rem !important;
+        font-size: 0.70rem !important;
         letter-spacing: 0.05em;
     }
 
     /* Section headers */
     .section-header {
         font-size: 1rem;
-        font-weight: 600;
-        color: #2c3e50;
-        border-bottom: 2px solid #2196F3;
+        font-weight: 700;
+        color: #3e2c1c;
+        border-bottom: 2px solid #8c6d52;
         padding-bottom: 0.4rem;
         margin: 1.2rem 0 0.8rem 0;
     }
 
     /* Info panel */
     .info-panel {
-        background: #f0f7ff;
-        border-left: 4px solid #2196F3;
+        background: #f5f0e8;
+        border-left: 4px solid #8c6d52;
         padding: 0.8rem 1rem;
         border-radius: 0 6px 6px 0;
         font-size: 0.82rem;
-        color: #1a3a5c;
+        color: #3e2c1c;
         margin: 0.8rem 0;
     }
 
     /* Warning panel */
     .warning-panel {
-        background: #fff8e1;
-        border-left: 4px solid #f9a825;
+        background: #f5efe5;
+        border-left: 4px solid #b7791f;
         padding: 0.8rem 1rem;
         border-radius: 0 6px 6px 0;
         font-size: 0.82rem;
@@ -173,8 +182,17 @@ st.markdown("""
         padding: 1rem;
         text-align: center;
         font-size: 0.72rem;
-        color: #95a5a6;
-        border-top: 1px solid #ecf0f1;
+        color: #9e9585;
+        border-top: 1px solid #ddd5c8;
+    }
+
+    /* Tabs styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-family: 'Libre Baskerville', 'Georgia', serif;
+        font-weight: 700;
     }
 
     /* Hide default streamlit elements */
@@ -338,7 +356,7 @@ def main():
     # Header
     st.markdown("""
     <div class="clinical-header">
-        <h1>\U0001F9EA Decagon Mini — Polypharmacy Side Effect Predictor</h1>
+        <h1>Decagon Mini &mdash; Polypharmacy Side Effect Predictor</h1>
         <p>Graph Convolutional Network model for predicting adverse effects
         from drug combinations &nbsp;|&nbsp; Based on Zitnik et al., Bioinformatics 2018</p>
     </div>
@@ -346,7 +364,7 @@ def main():
 
     # ── Sidebar: Drug Selection ───────────────────────────────────────
     with st.sidebar:
-        st.markdown("### \U0001F489 Drug Selection")
+        st.markdown("### Drug Selection")
         st.markdown('<div class="info-panel">Select two drugs to analyze '
                     'potential polypharmacy adverse effects.</div>',
                     unsafe_allow_html=True)
@@ -375,14 +393,14 @@ def main():
 
         st.markdown("---")
         predict_btn = st.button(
-            "\U0001F50D  Analyze Interaction",
+            "Analyze Interaction",
             use_container_width=True,
             type="primary",
             disabled=(drug_a == drug_b),
         )
 
         st.markdown("---")
-        st.markdown("### \u2139\uFE0F System Info")
+        st.markdown("### System Information")
         st.markdown(f"""
         - **Drugs in model:** {ctx['n_drugs']}
         - **Proteins:** {ctx['n_proteins']}
@@ -401,9 +419,9 @@ def main():
 
     # ── Main Content: Tabs ────────────────────────────────────────────
     tab1, tab2, tab3 = st.tabs([
-        "\U0001F50D  Interaction Analysis",
-        "\U0001F4CA  Model Performance",
-        "\U0001F4C2  Dataset Overview",
+        "Interaction Analysis",
+        "Model Performance",
+        "Dataset Overview",
     ])
 
     # ── Tab 1: Interaction Analysis ───────────────────────────────────
@@ -483,14 +501,14 @@ def main():
             st.markdown('<div class="section-header">Score Distribution</div>',
                         unsafe_allow_html=True)
             chart_df = df[["Side Effect", "Score"]].set_index("Side Effect")
-            st.bar_chart(chart_df, height=350, color="#2196F3")
+            st.bar_chart(chart_df, height=350, color="#8c6d52")
 
         else:
             # Landing state
             st.markdown("""
-            <div style="text-align:center; padding:4rem 2rem; color:#6b7a8d;">
-                <p style="font-size:3rem; margin-bottom:0.5rem;">\U0001F489\U0001F500\U0001F48A</p>
-                <h3 style="color:#2c3e50; font-weight:600;">Drug Interaction Analyzer</h3>
+            <div style="text-align:center; padding:4rem 2rem; color:#8c7a6a;">
+                <p style="font-size:1.8rem; margin-bottom:0.3rem; color:#6d4c35; font-weight:700;">Rx</p>
+                <h3 style="color:#3e2c1c; font-weight:700;">Drug Interaction Analyzer</h3>
                 <p style="max-width:500px; margin:0.5rem auto; font-size:0.9rem; line-height:1.6;">
                     Select two drugs from the sidebar and click
                     <strong>Analyze Interaction</strong> to predict potential
@@ -554,7 +572,7 @@ def main():
                 st.line_chart(
                     log_df.set_index("epoch")["val_auroc"],
                     height=280,
-                    color="#2196F3",
+                    color="#8c6d52",
                 )
 
         # Per-relation performance
@@ -628,7 +646,7 @@ def main():
             st.bar_chart(
                 edge_data.set_index("Edge Type"),
                 height=250,
-                color="#0f4c81",
+                color="#6d4c35",
             )
 
         st.markdown('<div class="section-header">Configuration</div>',
