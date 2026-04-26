@@ -106,7 +106,6 @@ class DecagonTrainer:
             mode="max",           # maximizar AUROC
             factor=lr_factor,
             patience=lr_patience,
-            verbose=False,
         )
 
         # Features dos nos (fixas durante treino)
