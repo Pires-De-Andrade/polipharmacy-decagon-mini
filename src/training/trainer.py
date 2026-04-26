@@ -26,6 +26,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
 
 from src.model.decagon import DecagonModel, build_homogeneous_graph
 from src.training.negative_sampling import (
@@ -245,34 +246,46 @@ class DecagonTrainer:
         Returns:
             Métricas finais no test set com o melhor modelo.
         """
-        log.info("=" * 60)
-        log.info("INICIO DO TREINAMENTO")
-        log.info("  Epocas max: %d | Patience: %d", n_epochs, self.patience)
-        log.info("  Parametros: %s", f"{sum(p.numel() for p in self.model.parameters()):,}")
-        log.info("=" * 60)
+        n_params = sum(p.numel() for p in self.model.parameters())
+        print()
+        print("=" * 60)
+        print(f"  INICIO DO TREINAMENTO")
+        print(f"  Epocas max: {n_epochs} | Patience: {self.patience}")
+        print(f"  Parametros: {n_params:,}")
+        print("=" * 60)
+        print()
 
         epochs_no_improve = 0
         t_start = time.perf_counter()
 
-        for epoch in range(1, n_epochs + 1):
+        pbar = tqdm(
+            range(1, n_epochs + 1),
+            desc="Treinamento",
+            unit="epoch",
+            bar_format="{l_bar}{bar:30}{r_bar}",
+            ncols=100,
+        )
+
+        for epoch in pbar:
             t0 = time.perf_counter()
 
             # Treino
             loss = self.train_epoch()
 
-            # Avaliação no val
+            # Avaliacao no val
             val_metrics = self.evaluate("val")
 
             dt = time.perf_counter() - t0
 
-            # Logging
-            log.info(
-                "Epoch %3d/%d | loss=%.4f | val_AUROC=%.4f | val_AUPRC=%.4f | %.1fs",
-                epoch, n_epochs, loss,
-                val_metrics.macro_auroc, val_metrics.macro_auprc, dt,
+            # Atualizar barra de progresso
+            pbar.set_postfix(
+                loss=f"{loss:.3f}",
+                AUROC=f"{val_metrics.macro_auroc:.4f}",
+                best=f"{self.best_auroc:.4f}",
+                patience=f"{epochs_no_improve}/{self.patience}",
             )
 
-            # Histórico
+            # Historico
             self.history.append({
                 "epoch": epoch,
                 "loss": loss,
@@ -294,14 +307,14 @@ class DecagonTrainer:
             else:
                 epochs_no_improve += 1
                 if epochs_no_improve >= self.patience:
-                    log.info(
-                        "Early stopping na epoca %d (melhor: epoca %d, AUROC=%.4f)",
-                        epoch, self.best_epoch, self.best_auroc,
+                    pbar.set_description(
+                        f"Early stop (best epoch {self.best_epoch})"
                     )
                     break
 
+        pbar.close()
         total_time = time.perf_counter() - t_start
-        log.info("Treinamento concluido em %.1fs (%d epocas)", total_time, epoch)
+        print(f"\nTreinamento concluido em {total_time:.1f}s ({epoch} epocas)")
 
         # ── Avaliação final no test set com melhor modelo ─────────────
         log.info("Carregando melhor modelo (epoca %d) ...", self.best_epoch)
