@@ -40,19 +40,21 @@ from src.training.split import train_val_test_split, save_splits
 from src.training.trainer import DecagonTrainer
 
 # ─────────────────────────────────────────────────────────────────────
-# Hiperparâmetros (ajustáveis)
+# Hiperparametros (ajustaveis)
 # ─────────────────────────────────────────────────────────────────────
-HIDDEN_DIM = 64          # Dimensão da camada intermediária
-EMBED_DIM = 64           # Dimensão final dos embeddings
-N_BASES = 10             # Bases para decomposição R-GCN
+HIDDEN_DIM = 64          # Dimensao da camada intermediaria
+EMBED_DIM = 64           # Dimensao final dos embeddings
+N_BASES = 10             # Bases para decomposicao R-GCN
 DROPOUT = 0.1            # Dropout entre camadas
 LR = 0.001               # Learning rate
-WEIGHT_DECAY = 1e-5      # Regularização L2
+WEIGHT_DECAY = 1e-5      # Regularizacao L2
 GRAD_CLIP = 1.0          # Gradient clipping
-N_EPOCHS = 100           # Épocas máximas
-PATIENCE = 10            # Early stopping patience
-TRAIN_RATIO = 0.8        # Fração de treino
-VAL_RATIO = 0.1          # Fração de validação
+N_EPOCHS = 200           # Epocas maximas
+PATIENCE = 25            # Early stopping patience
+LR_PATIENCE = 10         # Epocas para reduzir LR
+LR_FACTOR = 0.5          # Fator de reducao do LR
+TRAIN_RATIO = 0.8        # Fracao de treino
+VAL_RATIO = 0.1          # Fracao de validacao
 SEED = 42                # Seed para reprodutibilidade
 
 # Caminhos
@@ -127,6 +129,8 @@ def main() -> None:
         weight_decay=WEIGHT_DECAY,
         grad_clip=GRAD_CLIP,
         patience=PATIENCE,
+        lr_patience=LR_PATIENCE,
+        lr_factor=LR_FACTOR,
         save_dir=SAVE_DIR,
         results_dir=RESULTS_DIR,
     )
