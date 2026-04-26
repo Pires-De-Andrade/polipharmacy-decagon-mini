@@ -5,7 +5,7 @@ Reprodução do modelo **Decagon** (Zitnik et al., 2018) para predição de efei
 > **Paper:** *Modeling polypharmacy side effects with graph convolutional networks*
 > M. Zitnik, M. Agrawal, J. Leskovec — Bioinformatics, 2018
 
-## 📋 Visão Geral
+## Visão Geral
 
 O Decagon é um modelo baseado em GCN relacional (R-GCN) que opera sobre um grafo multimodal heterogêneo para predizer efeitos adversos causados por combinações de medicamentos (polifarmácia). O grafo integra:
 
@@ -23,7 +23,7 @@ Como o dataset completo é inviável em CPU (645 drogas, 19K proteínas, 5.4M ar
 | Top efeitos adversos | 50 |
 | Proteínas | apenas as conectadas via drug-target |
 
-## 🗂️ Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 polipharmacy-decagon-mini/
@@ -46,7 +46,7 @@ polipharmacy-decagon-mini/
 └── README.md
 ```
 
-## 🚀 Quickstart
+## Quickstart
 
 ```bash
 # 1. Instalar dependências
@@ -62,7 +62,7 @@ python -m src.data.graph_builder
 python scripts/check_data.py
 ```
 
-## ⚙️ Configuração
+## Configuração
 
 Os filtros do subconjunto podem ser ajustados em `src/data/loader.py`:
 
@@ -72,7 +72,7 @@ N_SIDE_EFFECTS = 50    # Top efeitos adversos
 MIN_COMBO_PER_SE = 10  # Mín. pares por efeito
 ```
 
-## 📊 Dados
+## Dados
 
 Os dados originais são do [SNAP Stanford - Decagon](http://snap.stanford.edu/decagon/):
 
@@ -84,7 +84,7 @@ Os dados originais são do [SNAP Stanford - Decagon](http://snap.stanford.edu/de
 | `bio-decagon-mono.csv` | Efeitos adversos individuais |
 | `bio-decagon-effectcategories.csv` | Categorias dos efeitos |
 
-## 🔧 Stack
+## Stack
 
 - Python 3.10+
 - PyTorch 2.2 (CPU)
