@@ -62,21 +62,17 @@ st.markdown("""
         background-color: #faf6f0;
     }
 
-    /* Header bar — warm dark tone */
+    /* Header bar — big and brown, no background cell */
     .clinical-header {
-        background: linear-gradient(135deg, #3e2c1c 0%, #5a3e2b 50%, #6d4c35 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 6px;
         margin-bottom: 1.5rem;
-        color: #faf6f0;
-        box-shadow: 0 2px 10px rgba(62, 44, 28, 0.25);
-        border-bottom: 3px solid #8c6d52;
+        padding-top: 1rem;
     }
     .clinical-header h1 {
-        margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em;
+        margin: 0; font-size: 2.8rem; font-weight: 700; letter-spacing: -0.01em; color: #6d4c35;
+        line-height: 1.1;
     }
     .clinical-header p {
-        margin: 0.3rem 0 0 0; font-size: 0.82rem; opacity: 0.8; font-weight: 400;
+        margin: 0.8rem 0 0 0; font-size: 0.95rem; color: #8c7a6a; font-weight: 400;
     }
 
     /* Metric cards */
@@ -104,7 +100,7 @@ st.markdown("""
 
     /* Risk level badges */
     .risk-high {
-        background: #fce8e6; color: #a83227; border: 1px solid #e0b4ae;
+        background: #fdf3e8; color: #b95d1b; border: 1px solid #eab795;
         padding: 0.2rem 0.7rem; border-radius: 12px; font-weight: 700;
         font-size: 0.72rem; display: inline-block;
     }
@@ -132,6 +128,9 @@ st.markdown("""
     }
 
     /* Table styling */
+    table, th, td, [data-testid="stDataFrame"], [data-testid="stTable"] {
+        color: #3e2c1c !important;
+    }
     .dataframe {
         font-size: 0.82rem !important;
     }
@@ -198,7 +197,6 @@ st.markdown("""
     /* Hide default streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -427,14 +425,19 @@ def main():
     # ── Tab 1: Interaction Analysis ───────────────────────────────────
     with tab1:
         if predict_btn and drug_a != drug_b:
+            st.session_state["predictions"] = predict_side_effects(ctx, drug_a, drug_b)
+            st.session_state["drug_pair"] = (drug_a_display, drug_b_display)
+
+        if "predictions" in st.session_state:
+            df = st.session_state["predictions"]
+            saved_drug_a, saved_drug_b = st.session_state["drug_pair"]
+
             st.markdown(
                 f'<div class="section-header">'
-                f'Predicted Adverse Effects: {drug_a_display} + {drug_b_display}'
+                f'Predicted Adverse Effects: {saved_drug_a} + {saved_drug_b}'
                 f'</div>',
                 unsafe_allow_html=True,
             )
-
-            df = predict_side_effects(ctx, drug_a, drug_b)
 
             # Summary metrics
             n_high = (df["Risk"] == "High").sum()
@@ -455,7 +458,7 @@ def main():
                 st.markdown(
                     '<div class="metric-card">'
                     '<div class="label">High Risk</div>'
-                    f'<div class="value" style="color:#c0392b">{n_high}</div>'
+                    f'<div class="value" style="color:#b95d1b">{n_high}</div>'
                     '</div>',
                     unsafe_allow_html=True,
                 )
@@ -565,7 +568,7 @@ def main():
                 st.line_chart(
                     log_df.set_index("epoch")["loss"],
                     height=280,
-                    color="#e74c3c",
+                    color="#b95d1b",
                 )
             with col_right:
                 st.markdown("**Validation AUROC per Epoch**")
