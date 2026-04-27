@@ -309,9 +309,9 @@ def predict_side_effects(
             se_name = ctx["se_name_map"].get(se_code, se_code)
             se_cat = ctx["se_category_map"].get(se_code, "—")
 
-            if score >= 0.65:
+            if score >= 0.80:
                 risk = "High"
-            elif score >= 0.45:
+            elif score >= 0.65:
                 risk = "Moderate"
             else:
                 risk = "Low"
