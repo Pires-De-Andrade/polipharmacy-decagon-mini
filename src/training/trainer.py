@@ -81,6 +81,8 @@ class DecagonTrainer:
         lr_factor: float = 0.5,
         save_dir: Path | str = "saved_models",
         results_dir: Path | str = "results",
+        optimizer: torch.optim.Optimizer | None = None,
+        scheduler=None,
     ):
         self.model = model
         self.data = data
@@ -95,18 +97,24 @@ class DecagonTrainer:
         self.save_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
-        # Optimizer
-        self.optimizer = torch.optim.Adam(
-            model.parameters(), lr=lr, weight_decay=weight_decay
-        )
+        # Optimizer — usa externo se fornecido, senao cria default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        else:
+            self.optimizer = torch.optim.Adam(
+                model.parameters(), lr=lr, weight_decay=weight_decay
+            )
 
-        # LR Scheduler — reduz LR quando val_AUROC estagna
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer,
-            mode="max",           # maximizar AUROC
-            factor=lr_factor,
-            patience=lr_patience,
-        )
+        # LR Scheduler — usa externo se fornecido, senao cria default
+        if scheduler is not None:
+            self.scheduler = scheduler
+        else:
+            self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self.optimizer,
+                mode="max",           # maximizar AUROC
+                factor=lr_factor,
+                patience=lr_patience,
+            )
 
         # Features dos nos (fixas durante treino)
         self.x_drug = data["drug"].x

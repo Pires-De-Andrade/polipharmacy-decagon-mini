@@ -101,6 +101,8 @@ def main() -> None:
     # ── 3. Instanciar modelo ──────────────────────────────────────────
     print("[3/4] Instanciando modelo Decagon ...")
 
+    protein_feat_dim = data["protein"].x.shape[1]
+
     model = DecagonModel(
         n_drugs=n_drugs,
         n_proteins=n_proteins,
@@ -109,15 +111,36 @@ def main() -> None:
         embed_dim=EMBED_DIM,
         n_bases=N_BASES,
         dropout=DROPOUT,
+        protein_feat_dim=protein_feat_dim,
     )
 
     n_params = sum(p.numel() for p in model.parameters())
     print(f"      Parametros totais: {n_params:,}")
     print(f"      hidden_dim={HIDDEN_DIM}, embed_dim={EMBED_DIM}, n_bases={N_BASES}")
+    print(f"      protein_feat_dim={protein_feat_dim}")
     print()
 
     # ── 4. Treinar ────────────────────────────────────────────────────
     print("[4/4] Iniciando treinamento ...")
+    print()
+
+    # Parameter groups: protein_proj usa LR menor para preservar
+    # a estrutura dos embeddings ESM-2 pre-treinados
+    protein_proj_params = set(model.encoder.protein_proj.parameters())
+    other_params = [p for p in model.parameters()
+                    if p not in protein_proj_params]
+
+    LR_PROJ = LR * 0.1  # 10x menor para a camada de projecao
+    optimizer = torch.optim.Adam([
+        {"params": list(protein_proj_params), "lr": LR_PROJ},
+        {"params": other_params, "lr": LR},
+    ], weight_decay=WEIGHT_DECAY)
+
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="max", factor=LR_FACTOR, patience=LR_PATIENCE,
+    )
+
+    print(f"      Optimizer: Adam (protein_proj lr={LR_PROJ}, rest lr={LR})")
     print()
 
     trainer = DecagonTrainer(
@@ -125,14 +148,12 @@ def main() -> None:
         data=data,
         splits=splits,
         se_order=se_order,
-        lr=LR,
-        weight_decay=WEIGHT_DECAY,
         grad_clip=GRAD_CLIP,
         patience=PATIENCE,
-        lr_patience=LR_PATIENCE,
-        lr_factor=LR_FACTOR,
         save_dir=SAVE_DIR,
         results_dir=RESULTS_DIR,
+        optimizer=optimizer,
+        scheduler=scheduler,
     )
 
     test_metrics = trainer.fit(n_epochs=N_EPOCHS)

@@ -47,6 +47,7 @@ class DecagonModel(nn.Module):
         embed_dim: int = 64,
         n_bases: int = 10,
         dropout: float = 0.1,
+        protein_feat_dim: int = 320,
     ):
         super().__init__()
 
@@ -65,6 +66,7 @@ class DecagonModel(nn.Module):
             n_relations=n_relations,
             n_bases=n_bases,
             dropout=dropout,
+            protein_feat_dim=protein_feat_dim,
         )
 
         self.decoder = DEDICOMDecoder(

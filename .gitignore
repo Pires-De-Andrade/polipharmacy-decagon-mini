@@ -57,3 +57,5 @@ Thumbs.db
 # Project specific directories
 results/
 saved_models/
+
+decagon_architecture_comparison.md

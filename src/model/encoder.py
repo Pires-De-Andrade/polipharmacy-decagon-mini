@@ -2,8 +2,10 @@
 encoder.py — R-GCN Encoder para o grafo heterogêneo Decagon.
 
 Arquitetura (fiel ao paper Zitnik et al., 2018):
-  1. Projeção linear das features one-hot de cada tipo de nó para um
+  1. Projeção linear das features de cada tipo de nó para um
      espaço compartilhado de dimensão hidden_dim.
+     - drug: one-hot (n_drugs) ou features pré-treinadas
+     - protein: ESM-2 (320-dim) ou one-hot fallback
   2. Duas camadas R-GCN com decomposição de base (num_bases) para
      reduzir o número de parâmetros com muitos tipos de relação.
   3. Saída: embeddings z_drug e z_protein de dimensão embed_dim.
@@ -30,17 +32,18 @@ from torch_geometric.nn import RGCNConv
 class DecagonEncoder(nn.Module):
     """R-GCN encoder de 2 camadas com decomposição de base.
 
-    Projeta features one-hot heterogêneas para embeddings densos num
+    Projeta features heterogêneas para embeddings densos num
     espaço compartilhado, depois aplica convolução relacional.
 
     Args:
-        n_drugs:     Número de nós do tipo droga.
-        n_proteins:  Número de nós do tipo proteína.
-        hidden_dim:  Dimensão da camada intermediária.
-        embed_dim:   Dimensão final dos embeddings.
-        n_relations: Total de tipos de relação no grafo homogêneo.
-        n_bases:     Número de bases para decomposição (reduz parâmetros).
-        dropout:     Taxa de dropout entre camadas.
+        n_drugs:          Número de nós do tipo droga.
+        n_proteins:       Número de nós do tipo proteína.
+        hidden_dim:       Dimensão da camada intermediária.
+        embed_dim:        Dimensão final dos embeddings.
+        n_relations:      Total de tipos de relação no grafo homogêneo.
+        n_bases:          Número de bases para decomposição (reduz parâmetros).
+        protein_feat_dim: Dimensão das features de proteína (320 para ESM-2).
+        dropout:          Taxa de dropout entre camadas.
     """
 
     def __init__(
@@ -52,6 +55,7 @@ class DecagonEncoder(nn.Module):
         n_relations: int = 53,
         n_bases: int = 10,
         dropout: float = 0.1,
+        protein_feat_dim: int = 320,
     ):
         super().__init__()
 
@@ -60,7 +64,7 @@ class DecagonEncoder(nn.Module):
 
         # ── Projeções de entrada (dims diferentes por tipo de nó) ─────
         self.drug_proj = nn.Linear(n_drugs, hidden_dim)
-        self.protein_proj = nn.Linear(n_proteins, hidden_dim)
+        self.protein_proj = nn.Linear(protein_feat_dim, hidden_dim)
 
         # ── Camadas R-GCN com decomposição de base ───────────────────
         self.conv1 = RGCNConv(
@@ -88,8 +92,8 @@ class DecagonEncoder(nn.Module):
         """Forward pass do encoder.
 
         Args:
-            x_drug:     (n_drugs, n_drugs) features one-hot das drogas.
-            x_protein:  (n_proteins, n_proteins) features one-hot das proteínas.
+            x_drug:     (n_drugs, n_drugs) features das drogas (one-hot).
+            x_protein:  (n_proteins, protein_feat_dim) features das proteínas (ESM-2).
             edge_index: (2, E) índices de arestas no grafo homogêneo.
             edge_type:  (E,) tipo de relação de cada aresta.
 

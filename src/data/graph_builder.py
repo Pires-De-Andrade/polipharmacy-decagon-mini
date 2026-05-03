@@ -149,14 +149,24 @@ class DecagonGraphBuilder:
         n_drugs = len(self.drug_to_idx)
         n_proteins = len(self.protein_to_idx)
 
-        # ─── Node features (identidade) ──────────────────────────────
-        # Usa embeddings iniciais como one-hot esparso → serão substituídos
-        # por embeddings aprendidos no R-GCN, mas aqui servem para
-        # definir a dimensão e permitir forward pass inicial.
+        # ─── Node features ────────────────────────────────────────
+        # Drug: one-hot (identidade) — será substituído por ChemBERTa futuramente
         data["drug"].x = torch.eye(n_drugs, dtype=torch.float32)
         data["drug"].num_nodes = n_drugs
 
-        data["protein"].x = torch.eye(n_proteins, dtype=torch.float32)
+        # Protein: embeddings ESM-2 pré-computados (320-dim)
+        esm2_path = self.processed_dir / "protein_esm2.pt"
+        if esm2_path.exists():
+            esm2 = torch.load(esm2_path, weights_only=True)
+            assert esm2.shape[0] == n_proteins, (
+                f"ESM-2 tensor has {esm2.shape[0]} rows but graph has "
+                f"{n_proteins} proteins"
+            )
+            data["protein"].x = esm2
+            log.info("Protein features: ESM-2 embeddings %s", list(esm2.shape))
+        else:
+            data["protein"].x = torch.eye(n_proteins, dtype=torch.float32)
+            log.warning("ESM-2 not found at %s — using one-hot fallback", esm2_path)
         data["protein"].num_nodes = n_proteins
 
         log.info("Nós criados: %d drugs, %d proteins", n_drugs, n_proteins)
